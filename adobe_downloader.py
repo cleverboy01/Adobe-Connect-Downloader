@@ -170,6 +170,10 @@ def main():
     except FileNotFoundError as e:
         logging.critical(f"FATAL ERROR: {e}")
         logging.critical("Please ensure FFmpeg is installed and accessible in your system's PATH.")
+        logging.critical("💡 How to install FFmpeg:")
+        logging.critical("   - Mac: `brew install ffmpeg`")
+        logging.critical("   - Linux: `sudo apt install ffmpeg`")
+        logging.critical("   - Windows: Download from https://www.gyan.dev/ffmpeg/builds/ and add to PATH")
         sys.exit(1)
 
     if args.url:
@@ -297,6 +301,9 @@ def download_zip_file(zip_url: str, output_path: str, Progress_class, session: '
             content_type = r.headers.get('Content-Type', '').lower()
             if 'html' in content_type:
                 logging.warning(f"Url returned HTML instead of ZIP. Likely login required or wrong link.")
+                logging.warning("💡 Hint: This recording might be private/restricted.")
+                logging.warning("👉 Action: Use your browser to log in, get the BREEZESESSION cookie, and run again with:")
+                logging.warning("   --cookies \"BREEZESESSION=your_value\"")
                 return False
             
             total_size = int(r.headers.get('content-length', 0))

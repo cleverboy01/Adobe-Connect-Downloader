@@ -22,7 +22,8 @@ class TqdmProgress:
             unit_divisor=1024,
             desc=description,
             ncols=80,           # Set a reasonable width for most terminals
-            leave=False         # Clear the bar on completion
+            leave=False,        # Clear the bar on completion
+            colour='cyan'
         )
 
     def update(self, chunk_size: int):
