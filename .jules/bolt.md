@@ -1,0 +1,3 @@
+## 2024-05-24 - Redundant network requests during URL analysis
+**Learning:** Identified a performance bottleneck specific to this codebase's architecture in `adobe_downloader.py`. The initialization phase repeatedly fetches the same URL for different metadata extractions (`get_id_and_type` and `get_account_id` both call `session.get(meeting_url)`). Since batch mode iterates over these synchronously, this results in an O(2N) network request pattern for N recordings, unnecessarily doubling the latency of the analysis phase.
+**Action:** Inject a caching layer onto the `requests.Session` object to memoize page bodies per URL, preventing redundant HTTP requests and reducing network overhead by 50% during analysis.

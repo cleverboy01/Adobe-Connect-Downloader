@@ -224,12 +224,22 @@ def setup_session(cookie_str: Optional[str]) -> 'requests.Session':
                 session.cookies.set(name.strip(), value.strip(), domain=domain)
     return session
 
+def _get_page_text(url: str, session: 'requests.Session') -> str:
+    """⚡ Bolt: Memoizes page text to prevent redundant HTTP requests for the same URL."""
+    if not hasattr(session, '_page_cache'):
+        session._page_cache = {}
+    if url not in session._page_cache:
+        response = session.get(url, timeout=15)
+        response.raise_for_status()
+        session._page_cache[url] = response.text
+    return session._page_cache[url]
+
 def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[Tuple[str, str]]:
     import requests
     logging.info(f"Analyzing URL: {meeting_url}")
     try:
-        response = session.get(meeting_url, timeout=15)
-        response.raise_for_status()
+        # ⚡ Bolt: Use cached page text to avoid duplicate network requests
+        page_text = _get_page_text(meeting_url, session)
         
         # More robust SCO-ID search
         patterns = [
@@ -239,7 +249,7 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
             r'scoid:(\d+)'
         ]
         for p in patterns:
-            match = re.search(p, response.text, re.IGNORECASE)
+            match = re.search(p, page_text, re.IGNORECASE)
             if match:
                 found_id = match.group(1)
                 logging.info(f"Found SCO-ID: {found_id}")
@@ -260,8 +270,9 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
 
 def get_account_id(meeting_url: str, session: 'requests.Session') -> Optional[str]:
     try:
-        response = session.get(meeting_url, timeout=10)
-        match = re.search(r'account_id\s*=\s*(\d+)', response.text)
+        # ⚡ Bolt: Reuse cached page text to avoid redundant network request
+        page_text = _get_page_text(meeting_url, session)
+        match = re.search(r'account_id\s*=\s*(\d+)', page_text)
         if match:
             return match.group(1)
     except:
