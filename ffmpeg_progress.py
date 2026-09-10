@@ -55,7 +55,7 @@ class FFmpegWithProgress:
         if self.duration_seconds > 0:
             self.pbar = tqdm(total=round(self.duration_seconds), unit='s', desc="Encoding", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
         else:
-            print("Encoding video (duration unknown)...")
+            self.pbar = tqdm(unit='s', desc="Encoding (duration unknown)", bar_format="{desc}: {n_fmt}s [{elapsed}]")
 
         process = subprocess.Popen(self.command, stderr=subprocess.PIPE, stdout=subprocess.PIPE, universal_newlines=True, encoding="utf-8", errors="replace", env=os.environ)
         
@@ -70,7 +70,7 @@ class FFmpegWithProgress:
         
         if self.pbar:
             # Ensure the bar completes to 100% on success
-            if process.wait() == 0:
+            if process.wait() == 0 and self.duration_seconds > 0:
                  self.pbar.update(self.duration_seconds - last_seconds)
             self.pbar.close()
 
