@@ -1,0 +1,3 @@
+## 2024-05-24 - Dynamic Progress Spinner for Unknown Durations
+**Learning:** For command-line applications, displaying a static "Encoding video (duration unknown)..." string while a long-running process (like ffmpeg) is executing can lead to a poor user experience. Users may assume the process has hung or crashed because there is no visual feedback indicating that the program is still active and making progress.
+**Action:** Always provide an active, dynamic indicator (like an indeterminate `tqdm` progress bar or spinner) for long-running processes, even if the total duration or exact progress cannot be calculated. This simple change reassures the user and significantly improves the perceived responsiveness of the application.
