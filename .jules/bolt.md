@@ -1,0 +1,3 @@
+## 2024-05-18 - Metadata Extraction Network Optimization
+**Learning:** In URL-based batch processing applications, fetching metadata can sometimes result in an N+1 query pattern if different pieces of metadata are resolved by different functions hitting the same URL. Here, `get_id_and_type` and `get_account_id` were both issuing `requests.get()` to the exact same Adobe Connect recording URL.
+**Action:** When inspecting metadata extractors in web-scraper-like functionality, always check if multiple functions are issuing redundant GET requests to the same URL. Combine them to fetch HTML content once and pass it to parsers, cutting network overhead significantly (O(1) instead of O(N) where N is number of metadata fields).
