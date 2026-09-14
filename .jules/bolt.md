@@ -1,0 +1,3 @@
+## 2024-09-14 - Eliminated N+1 Redundant Network Requests
+**Learning:** Found a hidden performance bottleneck where utility functions (`get_id_and_type`, `get_account_id`) were making their own independent `session.get(url)` network calls. This led to multiple identical HTTP GET requests per URL processed (an N+1 style inefficiency).
+**Action:** Always inspect utility functions that take URLs or session objects to ensure they are not re-fetching data. The optimal pattern is to fetch the HTML/metadata once at the controller level (`process_single_url`) and pass the resulting text (`html_text`) down to the helper functions.
