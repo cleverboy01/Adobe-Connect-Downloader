@@ -153,10 +153,11 @@ def main():
     )
     
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("url", nargs='?', default=None, help="The single Adobe Connect recording URL to download.")
-    parser.add_argument("-o", "--output", help="Optional output filename (only used with single URL).")
-    parser.add_argument("--cookies", help="Authentication cookies (string or path to cookies.txt).")
-    parser.add_argument("--quality", choices=[q.value for q in QualityProfile], default='medium', help="Encoding quality preset.")
+    group.add_argument("url", nargs='?', default=None, metavar="URL", help="The single Adobe Connect recording URL to download.")
+    group.add_argument("-f", "--file", metavar="FILE", help="Batch file (CSV) containing multiple URLs.")
+    parser.add_argument("-o", "--output", metavar="FILENAME", help="Optional output filename (only used with single URL).")
+    parser.add_argument("--cookies", metavar="COOKIES", help="Authentication cookies (string or path to cookies.txt).")
+    parser.add_argument("--quality", choices=[q.value for q in QualityProfile], default='medium', help="Encoding quality preset (default: medium).")
     
     args = parser.parse_args()
 
