@@ -154,6 +154,7 @@ def main():
     
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("url", nargs='?', default=None, help="The single Adobe Connect recording URL to download.")
+    group.add_argument("-f", "--file", help="A batch file (e.g., list.csv) containing URLs to download.")
     parser.add_argument("-o", "--output", help="Optional output filename (only used with single URL).")
     parser.add_argument("--cookies", help="Authentication cookies (string or path to cookies.txt).")
     parser.add_argument("--quality", choices=[q.value for q in QualityProfile], default='medium', help="Encoding quality preset.")
