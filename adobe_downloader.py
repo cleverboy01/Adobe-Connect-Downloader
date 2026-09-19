@@ -224,13 +224,25 @@ def setup_session(cookie_str: Optional[str]) -> 'requests.Session':
                 session.cookies.set(name.strip(), value.strip(), domain=domain)
     return session
 
+def get_cached_page_text(meeting_url: str, session: 'requests.Session') -> Optional[str]:
+    """Helper to fetch and cache page text to prevent duplicate network requests."""
+    if not hasattr(session, '_page_cache'):
+        session._page_cache = {}
+    if meeting_url not in session._page_cache:
+        try:
+            response = session.get(meeting_url, timeout=15)
+            response.raise_for_status()
+            session._page_cache[meeting_url] = response.text
+        except Exception as e:
+            logging.warning(f"Failed to fetch page for analysis: {e}")
+            session._page_cache[meeting_url] = None
+    return session._page_cache[meeting_url]
+
 def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[Tuple[str, str]]:
-    import requests
     logging.info(f"Analyzing URL: {meeting_url}")
-    try:
-        response = session.get(meeting_url, timeout=15)
-        response.raise_for_status()
-        
+    page_text = get_cached_page_text(meeting_url, session)
+
+    if page_text:
         # More robust SCO-ID search
         patterns = [
             r'"sco-id"\s*:\s*"(\d+)"',
@@ -239,14 +251,11 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
             r'scoid:(\d+)'
         ]
         for p in patterns:
-            match = re.search(p, response.text, re.IGNORECASE)
+            match = re.search(p, page_text, re.IGNORECASE)
             if match:
                 found_id = match.group(1)
                 logging.info(f"Found SCO-ID: {found_id}")
                 return found_id, 'sco-id'
-                
-    except Exception as e:
-        logging.warning(f"Initial analysis issue: {e}")
     
     # Fallback to path ID
     path_part = urlparse(meeting_url).path.strip('/')
@@ -259,13 +268,11 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
     return None, None
 
 def get_account_id(meeting_url: str, session: 'requests.Session') -> Optional[str]:
-    try:
-        response = session.get(meeting_url, timeout=10)
-        match = re.search(r'account_id\s*=\s*(\d+)', response.text)
+    page_text = get_cached_page_text(meeting_url, session)
+    if page_text:
+        match = re.search(r'account_id\s*=\s*(\d+)', page_text)
         if match:
             return match.group(1)
-    except:
-        pass
     return None
 
 def construct_zip_urls(meeting_url: str, recording_id: str, id_type: str, session: 'requests.Session') -> List[str]:
