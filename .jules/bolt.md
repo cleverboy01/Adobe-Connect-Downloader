@@ -1,0 +1,3 @@
+## 2024-05-15 - Extracted Multiple Identifiers in Single Request
+**Learning:** The Adobe Connect initialization required extracting both a `sco-id` and an `account_id` to build valid download links. The code was initially making one HTTP GET request to find the `sco-id` and a *second* full HTTP GET request to the exact same URL just to parse the `account_id` via regex. Redundant GET requests add significant latency during startup, especially since these servers can be slow.
+**Action:** When extracting identifiers or metadata via regex from HTTP responses, always extract all necessary data in the first request and pass the extracted values down the call chain rather than re-fetching the HTML.
