@@ -1,0 +1,3 @@
+## 2024-05-24 - Improve progress bar visibility and terminal resizing
+**Learning:** Terminal progress bars using `tqdm` with a hardcoded `ncols` attribute (e.g. `ncols=80`) often result in truncation or ugly line-wrapping when users run the application in narrower terminals. Additionally, default uncolored bars lack visual distinction.
+**Action:** When initializing `tqdm` progress bars in CLI applications, use `dynamic_ncols=True` instead of a fixed `ncols` value. This allows the bar to automatically adjust to the user's terminal width. Furthermore, specifying `colour='green'` significantly enhances visual clarity and the perceived user experience. This reusable UX pattern should be applied consistently to all progress indicators in the codebase.
