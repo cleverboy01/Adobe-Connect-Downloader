@@ -1,0 +1,3 @@
+## 2024-05-24 - Redundant Network Requests in Adobe Connect Downloader
+**Learning:** Found a major performance bottleneck where `get_id_and_type` and `get_account_id` were both issuing synchronous GET requests to the exact same recording URL. This effectively doubles the network latency overhead for every recording initialized, especially punishing during batch processing.
+**Action:** Always inspect URL fetching patterns for redundency. Cache the initial HTML response body from the first setup request and pass it downstream to other parsers (like account_id extractors) rather than re-fetching the same page.
