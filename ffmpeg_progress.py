@@ -5,6 +5,8 @@ import os
 from tqdm import tqdm
 from typing import Optional
 
+_TIME_PATTERN = re.compile(r"time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})")
+
 class FFmpegWithProgress:
     """
     A class to run an FFmpeg command and display a tqdm progress bar.
@@ -41,7 +43,9 @@ class FFmpegWithProgress:
 
     def _parse_time(self, line: str) -> Optional[float]:
         """Parses the time from an FFmpeg output line."""
-        time_match = re.search(r"time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})", line)
+        if "time=" not in line:
+            return None
+        time_match = _TIME_PATTERN.search(line)
         if time_match:
             h, m, s, ms = map(int, time_match.groups())
             return h * 3600 + m * 60 + s + ms / 100.0
