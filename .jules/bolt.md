@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimize FFmpeg Output Parsing
+**Learning:** Parsing rapid, voluminous stderr output (like FFmpeg's encoding progress) with a non-compiled regex on every single line causes significant unnecessary CPU overhead. FFmpeg progress logs can be extremely chatty, and running a regex engine without a fast-path filter is a major bottleneck.
+**Action:** When parsing high-frequency log streams line-by-line, always precompile the regular expression. Furthermore, implement a fast-path substring check (e.g., `if "keyword" not in line`) to skip the expensive regex execution entirely on irrelevant lines.
