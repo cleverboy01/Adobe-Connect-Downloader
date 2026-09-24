@@ -33,10 +33,11 @@ def process_single_url(url: str, custom_filename: Optional[str], file_ops, ffmpe
     # Initialize session with optional cookies
     session = setup_session(getattr(file_ops, 'cookies', None))
     
-    recording_id, id_type = get_id_and_type(url, session)
-    if not recording_id:
+    metadata = get_meeting_metadata(url, session)
+    if not metadata:
         logging.error(f"Could not get a valid recording ID for {url}. Skipping.")
         return False
+    recording_id, id_type, account_id = metadata
 
     safe_recording_id = file_ops.safe_filename(recording_id)
     main_download_dir = file_ops.get_main_download_dir()
@@ -66,7 +67,7 @@ def process_single_url(url: str, custom_filename: Optional[str], file_ops, ffmpe
 
     # --- Download and Extract ---
     if not os.path.exists(zip_path):
-        zip_urls = construct_zip_urls(url, recording_id, id_type, session)
+        zip_urls = construct_zip_urls(url, recording_id, id_type, account_id, session)
         success = False
         for zip_url in zip_urls:
             logging.info(f"Trying download from: {zip_url}")
@@ -224,9 +225,14 @@ def setup_session(cookie_str: Optional[str]) -> 'requests.Session':
                 session.cookies.set(name.strip(), value.strip(), domain=domain)
     return session
 
-def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[Tuple[str, str]]:
+def get_meeting_metadata(meeting_url: str, session: 'requests.Session') -> Optional[Tuple[str, str, Optional[str]]]:
     import requests
     logging.info(f"Analyzing URL: {meeting_url}")
+
+    found_id = None
+    id_type = None
+    account_id = None
+
     try:
         response = session.get(meeting_url, timeout=15)
         response.raise_for_status()
@@ -242,38 +248,35 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
             match = re.search(p, response.text, re.IGNORECASE)
             if match:
                 found_id = match.group(1)
+                id_type = 'sco-id'
                 logging.info(f"Found SCO-ID: {found_id}")
-                return found_id, 'sco-id'
+                break
                 
+        acc_match = re.search(r'account_id\s*=\s*(\d+)', response.text)
+        if acc_match:
+            account_id = acc_match.group(1)
+
     except Exception as e:
         logging.warning(f"Initial analysis issue: {e}")
     
-    # Fallback to path ID
-    path_part = urlparse(meeting_url).path.strip('/')
-    path_match = re.search(r'([a-zA-Z0-9_-]+)$', path_part.split('?')[0])
-    if path_match:
-        found_id = path_match.group(1)
-        logging.info(f"Using Path ID: {found_id}")
-        return found_id, 'path-id'
-    
-    return None, None
+    if not found_id:
+        # Fallback to path ID
+        path_part = urlparse(meeting_url).path.strip('/')
+        path_match = re.search(r'([a-zA-Z0-9_-]+)$', path_part.split('?')[0])
+        if path_match:
+            found_id = path_match.group(1)
+            id_type = 'path-id'
+            logging.info(f"Using Path ID: {found_id}")
 
-def get_account_id(meeting_url: str, session: 'requests.Session') -> Optional[str]:
-    try:
-        response = session.get(meeting_url, timeout=10)
-        match = re.search(r'account_id\s*=\s*(\d+)', response.text)
-        if match:
-            return match.group(1)
-    except:
-        pass
+    if found_id:
+        return found_id, id_type, account_id
+    
     return None
 
-def construct_zip_urls(meeting_url: str, recording_id: str, id_type: str, session: 'requests.Session') -> List[str]:
+def construct_zip_urls(meeting_url: str, recording_id: str, id_type: str, account_id: Optional[str], session: 'requests.Session') -> List[str]:
     parsed_url = urlparse(meeting_url)
     base = f"{parsed_url.scheme}://{parsed_url.netloc}"
     urls = []
-    
-    account_id = get_account_id(meeting_url, session)
     
     # Structure A: Using the ID directly (common in new versions)
     urls.append(f"{base}/{recording_id}/output/{recording_id}.zip?download=zip")
