@@ -1,0 +1,3 @@
+## 2024-05-18 - Tqdm Progress Bar Enhancements
+**Learning:** Hardcoding `ncols=80` in `tqdm` progress bars can lead to messy truncation in narrower terminals or wasted space in wider ones.
+**Action:** Use `dynamic_ncols=True` combined with a clear `colour` (like 'green') to ensure the progress bar adapts beautifully to the user's terminal window while improving visual distinctiveness during long tasks (like downloading or video processing).
