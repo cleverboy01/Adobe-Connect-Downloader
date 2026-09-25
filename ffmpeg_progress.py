@@ -53,7 +53,7 @@ class FFmpegWithProgress:
         
         # Use a generic spinner if duration is unknown, otherwise a full progress bar
         if self.duration_seconds > 0:
-            self.pbar = tqdm(total=round(self.duration_seconds), unit='s', desc="Encoding", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
+            self.pbar = tqdm(dynamic_ncols=True, colour='green', total=round(self.duration_seconds), unit='s', desc="Encoding", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}]")
         else:
             print("Encoding video (duration unknown)...")
 
