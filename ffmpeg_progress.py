@@ -39,9 +39,17 @@ class FFmpegWithProgress:
             print(f"Warning: Could not get video duration for progress bar. {e}")
             return 0.0
 
+    # ⚡ Bolt Optimization: Compile regex once to avoid regex compilation overhead on every line
+    _TIME_PATTERN = re.compile(r"time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})")
+
     def _parse_time(self, line: str) -> Optional[float]:
         """Parses the time from an FFmpeg output line."""
-        time_match = re.search(r"time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})", line)
+        # ⚡ Bolt Optimization: Fast path early return for lines without time info.
+        # This bypasses the regex engine entirely for non-matching lines, saving CPU cycles.
+        if "time=" not in line:
+            return None
+
+        time_match = self._TIME_PATTERN.search(line)
         if time_match:
             h, m, s, ms = map(int, time_match.groups())
             return h * 3600 + m * 60 + s + ms / 100.0
