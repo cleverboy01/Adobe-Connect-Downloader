@@ -1,0 +1,3 @@
+## 2024-05-24 - Dynamic TQDM Progress Bars
+**Learning:** Hardcoded column widths (e.g., ncols=80) or missing dynamic width properties in `tqdm` progress bars cause truncation on varying terminal sizes, resulting in a poor CLI UX.
+**Action:** Standardize on using `dynamic_ncols=True` and `colour='green'` when initializing `tqdm` to ensure the progress bars are always fully visible, adapt to window resizing, and provide clear visual feedback without custom CSS.
