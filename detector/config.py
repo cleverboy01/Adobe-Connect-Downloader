@@ -12,7 +12,7 @@ class ValidationConfig:
     test_duration: int = 2  # Reduced from 5 to handle very short video segments
     timeout: int = 45
     cache_expiry_seconds: int = 3600
-    video_hash_chunk_size: int = 4096
+    video_hash_chunk_size: int = 262144  # 256KB
 
     # --- ADDED CONFIGURATION VALIDATION ---
     def __post_init__(self):
