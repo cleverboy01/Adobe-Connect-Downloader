@@ -33,7 +33,16 @@ def process_single_url(url: str, custom_filename: Optional[str], file_ops, ffmpe
     # Initialize session with optional cookies
     session = setup_session(getattr(file_ops, 'cookies', None))
     
-    recording_id, id_type = get_id_and_type(url, session)
+    # Fetch page text once to avoid redundant HTTP requests
+    try:
+        response = session.get(url, timeout=15)
+        response.raise_for_status()
+        page_text = response.text
+    except Exception as e:
+        logging.error(f"Failed to fetch URL {url}: {e}")
+        return False
+
+    recording_id, id_type = get_id_and_type(url, page_text)
     if not recording_id:
         logging.error(f"Could not get a valid recording ID for {url}. Skipping.")
         return False
@@ -66,7 +75,7 @@ def process_single_url(url: str, custom_filename: Optional[str], file_ops, ffmpe
 
     # --- Download and Extract ---
     if not os.path.exists(zip_path):
-        zip_urls = construct_zip_urls(url, recording_id, id_type, session)
+        zip_urls = construct_zip_urls(url, recording_id, id_type, page_text)
         success = False
         for zip_url in zip_urls:
             logging.info(f"Trying download from: {zip_url}")
@@ -224,13 +233,10 @@ def setup_session(cookie_str: Optional[str]) -> 'requests.Session':
                 session.cookies.set(name.strip(), value.strip(), domain=domain)
     return session
 
-def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[Tuple[str, str]]:
+def get_id_and_type(meeting_url: str, page_text: str) -> Optional[Tuple[str, str]]:
     import requests
     logging.info(f"Analyzing URL: {meeting_url}")
     try:
-        response = session.get(meeting_url, timeout=15)
-        response.raise_for_status()
-        
         # More robust SCO-ID search
         patterns = [
             r'"sco-id"\s*:\s*"(\d+)"',
@@ -239,7 +245,7 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
             r'scoid:(\d+)'
         ]
         for p in patterns:
-            match = re.search(p, response.text, re.IGNORECASE)
+            match = re.search(p, page_text, re.IGNORECASE)
             if match:
                 found_id = match.group(1)
                 logging.info(f"Found SCO-ID: {found_id}")
@@ -258,22 +264,21 @@ def get_id_and_type(meeting_url: str, session: 'requests.Session') -> Optional[T
     
     return None, None
 
-def get_account_id(meeting_url: str, session: 'requests.Session') -> Optional[str]:
+def get_account_id(page_text: str) -> Optional[str]:
     try:
-        response = session.get(meeting_url, timeout=10)
-        match = re.search(r'account_id\s*=\s*(\d+)', response.text)
+        match = re.search(r'account_id\s*=\s*(\d+)', page_text)
         if match:
             return match.group(1)
     except:
         pass
     return None
 
-def construct_zip_urls(meeting_url: str, recording_id: str, id_type: str, session: 'requests.Session') -> List[str]:
+def construct_zip_urls(meeting_url: str, recording_id: str, id_type: str, page_text: str) -> List[str]:
     parsed_url = urlparse(meeting_url)
     base = f"{parsed_url.scheme}://{parsed_url.netloc}"
     urls = []
     
-    account_id = get_account_id(meeting_url, session)
+    account_id = get_account_id(page_text)
     
     # Structure A: Using the ID directly (common in new versions)
     urls.append(f"{base}/{recording_id}/output/{recording_id}.zip?download=zip")
