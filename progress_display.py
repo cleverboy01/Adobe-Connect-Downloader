@@ -21,7 +21,8 @@ class TqdmProgress:
             unit_scale=True,    # Automatically convert to KB, MB, etc.
             unit_divisor=1024,
             desc=description,
-            ncols=80,           # Set a reasonable width for most terminals
+            dynamic_ncols=True, # Prevent truncation on varying terminal widths
+            colour='green',     # Improve visual clarity
             leave=False         # Clear the bar on completion
         )
 
