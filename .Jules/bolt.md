@@ -1,0 +1,3 @@
+## 2024-10-08 - Optimize File Hashing I/O Overhead
+**Learning:** Many small chunked reads (e.g., 64 reads of 4KB) for file hashing introduce significant I/O system call overhead compared to a single large read.
+**Action:** Use a single `read()` operation when extracting a fixed-size header, dynamically calculating the total byte size using configuration variables (e.g., `chunk_size * count`) to preserve flexibility.
