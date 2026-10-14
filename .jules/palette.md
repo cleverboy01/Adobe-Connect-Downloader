@@ -1,0 +1,3 @@
+## 2024-05-24 - [Tqdm Progress Bar UX Enhancements]
+**Learning:** Hardcoded widths (like `ncols=80`) can cause terminal truncation on resizing or in smaller panels. Adding colors significantly improves visual hierarchy in CLI applications.
+**Action:** A reusable UX pattern for this codebase is to use `dynamic_ncols=True` and a `colour='green'` parameter when initializing `tqdm` progress bars to prevent truncation and improve visual clarity.
