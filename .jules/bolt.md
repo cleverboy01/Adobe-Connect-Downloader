@@ -1,0 +1,3 @@
+## 2024-05-20 - Redundant HTTP Requests in Extraction
+**Learning:** The application makes redundant HTTP GET requests to the identical meeting URL during the initialization phase (`get_id_and_type` and `get_account_id`). Global caches are ineffective due to `requests.Session` context.
+**Action:** Pass response data (e.g., HTML text) directly between functions instead of repeating identical network calls.
