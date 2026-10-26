@@ -1,0 +1,3 @@
+## 2024-05-24 - File Hashing Overhead
+**Learning:** Found a performance anti-pattern in `detector/caching.py` `get_video_hash`. It reads a file header in 64 small chunks. User memory explicitly noted: "Avoid many small chunked reads for file hashing, as it introduces significant I/O system call overhead. Instead, use a single `read()` operation when extracting a fixed-size header, dynamically calculating the total read size using configuration variables (e.g., `self.config.video_hash_chunk_size * 64`) rather than hardcoding byte counts to preserve flexibility."
+**Action:** Consolidate multiple reads into a single read using `self.config.video_hash_chunk_size * 64`
