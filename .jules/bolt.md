@@ -1,0 +1,3 @@
+## 2024-05-15 - Redundant HTTP Requests
+**Learning:** Making redundant HTTP requests for the same URL in different functions (e.g., `get_id_and_type` and `get_account_id`) causes unnecessary network overhead.
+**Action:** Fetch the HTML text once at the start of the process and pass it down as a string parameter to subsequent functions, eliminating duplicate network calls and avoiding global URL caches.
