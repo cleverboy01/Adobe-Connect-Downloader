@@ -25,9 +25,9 @@ class EncoderCache:
         try:
             hasher = hashlib.sha256()
             with open(video_file_path, 'rb') as f:
-                for _ in range(64):  # Read first ~256KB for performance
-                    chunk = f.read(self.config.video_hash_chunk_size)
-                    if not chunk: break
+                # ⚡ Bolt Optimization: Single read reduces I/O system call overhead compared to loop chunking
+                chunk = f.read(self.config.video_hash_chunk_size * 64)  # Read first ~256KB for performance
+                if chunk:
                     hasher.update(chunk)
             return hasher.hexdigest()
         except FileNotFoundError:
