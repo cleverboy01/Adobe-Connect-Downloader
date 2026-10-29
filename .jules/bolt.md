@@ -1,0 +1,3 @@
+## 2024-05-24 - Eliminating Redundant Session Requests
+**Learning:** Passing `requests.Session` around and performing redundant `session.get(url)` requests in different helper functions creates significant network overhead and N+1 query problems on the backend.
+**Action:** Pass the fetched HTML `response.text` directly into helper functions (like `get_id_and_type` and `get_account_id`) to avoid redundant HTTP calls.
