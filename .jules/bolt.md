@@ -1,0 +1,3 @@
+## 2024-05-24 - [Avoid Small Chunked Reads for Hashing]
+**Learning:** Using multiple small `read()` operations in a loop (e.g., 64 iterations) for file hashing introduces significant I/O system call overhead, impacting performance.
+**Action:** Instead, use a single `read()` operation when extracting a fixed-size header, dynamically calculating the total read size (e.g., `chunk_size * 64`) to preserve flexibility and minimize I/O overhead.
