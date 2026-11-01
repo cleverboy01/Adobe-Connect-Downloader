@@ -1,0 +1,3 @@
+## 2024-11-01 - Eliminate redundant HTTP requests
+**Learning:** The application architecture suffered from a performance bottleneck where multiple functions (`get_id_and_type` and `get_account_id`) fetched the exact same HTML page independently. This violates the principle of minimal network calls and slows down the analysis phase. Using a global URL cache for `requests.Session` is an anti-pattern here due to session context issues.
+**Action:** Refactored the URL processing flow to pass the fetched HTML text directly from the initial request (`get_id_and_type`) down to subsequent functions (`construct_zip_urls`, `get_account_id`). This eliminates the redundant HTTP request while avoiding risky global caches.
