@@ -1,0 +1,3 @@
+## 2024-05-24 - Eliminating Redundant HTTP Requests
+**Learning:** This codebase previously suffered from redundant HTTP GET requests during the metadata extraction phase (fetching the page twice to find `sco-id` and `account_id`). Global caches (like URL dictionaries) are unsafe with `requests.Session`, so the safest pattern is to perform the request once and pass the `html_text` as a parameter to downstream functions.
+**Action:** When extracting multiple metadata fields from a single page, perform the fetch at a higher level and pass the raw response text down rather than having each utility function fetch the page again.
