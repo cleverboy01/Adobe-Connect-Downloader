@@ -1,0 +1,3 @@
+## 2024-05-18 - [tqdm Progress Bar UX Improvement]
+**Learning:** Hardcoding `ncols` in `tqdm` can cause truncation issues on smaller terminals, and using default colors can make progress bars blend in with other terminal text. `dynamic_ncols=True` and `colour` parameter (e.g., 'green') improve visual clarity and prevent truncation.
+**Action:** Use `dynamic_ncols=True` and `colour='green'` in `tqdm` progress bars.
